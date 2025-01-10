@@ -1,5 +1,6 @@
 export const ROUTES = {
   HOME: '/',
+  START: '/start',
   LEVELS: '/levels',
   LEVEL: '/level/:levelId',
   ACHIEVEMENTS: '/achievements',

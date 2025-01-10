@@ -3,16 +3,17 @@ import { persist } from 'zustand/middleware'
 import type { Progress, Achievement } from '../types/progress'
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS } from '../constants/achievements'
 
-interface ProgressStore extends Progress {
+export interface ProgressStore extends Progress {
   initializeProgress: () => void
   completeLevel: (levelId: number) => void
   recordCommand: (levelId: number, command: string) => void
   incrementAttempts: (levelId: number) => void
   incrementHints: (levelId: number) => void
   updateTimeSpent: (levelId: number, seconds: number) => void
-  unlockAchievement: (achievementId: string) => void
+  unlockAchievement: (achievementId: string, showNotification?: boolean) => void
   updateAchievementProgress: (achievementId: string, progress: number) => void
   checkAchievements: () => void
+  onAchievementUnlock?: (achievement: Achievement) => void
 }
 
 export const useProgressStore = create<ProgressStore>()(
@@ -25,7 +26,6 @@ export const useProgressStore = create<ProgressStore>()(
 
       initializeProgress: () => {
         const { achievements } = get()
-        // 如果成就列表为空，初始化所有成就
         if (Object.keys(achievements).length === 0) {
           const initialAchievements: Record<string, Achievement> = {}
           ACHIEVEMENTS.forEach((achievement) => {
@@ -36,10 +36,8 @@ export const useProgressStore = create<ProgressStore>()(
       },
 
       completeLevel: (levelId: number) => {
-        const { levels, lastCompletedLevel, checkAchievements } = get()
         const now = new Date().toISOString()
 
-        // 更新关卡进度
         set((state) => ({
           levels: {
             ...state.levels,
@@ -49,15 +47,13 @@ export const useProgressStore = create<ProgressStore>()(
               completedAt: now,
             },
           },
-          lastCompletedLevel: Math.max(lastCompletedLevel, levelId + 1),
+          lastCompletedLevel: Math.max(state.lastCompletedLevel, levelId + 1),
         }))
 
-        // 检查成就
-        checkAchievements()
+        get().checkAchievements()
       },
 
       recordCommand: (levelId: number, command: string) => {
-        const { levels, checkAchievements } = get()
         const now = new Date().toISOString()
 
         set((state) => ({
@@ -71,8 +67,7 @@ export const useProgressStore = create<ProgressStore>()(
           },
         }))
 
-        // 检查成就
-        checkAchievements()
+        get().checkAchievements()
       },
 
       incrementAttempts: (levelId: number) => {
@@ -112,18 +107,26 @@ export const useProgressStore = create<ProgressStore>()(
         }))
       },
 
-      unlockAchievement: (achievementId: string) => {
-        const { achievements } = get()
-        if (achievements[achievementId] && !achievements[achievementId].unlockedAt) {
+      unlockAchievement: (achievementId: string, showNotification = true) => {
+        const { achievements, onAchievementUnlock } = get()
+        const achievement = achievements[achievementId]
+
+        if (achievement && !achievement.unlockedAt) {
+          const updatedAchievement = {
+            ...achievement,
+            unlockedAt: new Date().toISOString(),
+          }
+
           set((state) => ({
             achievements: {
               ...state.achievements,
-              [achievementId]: {
-                ...state.achievements[achievementId],
-                unlockedAt: new Date().toISOString(),
-              },
+              [achievementId]: updatedAchievement,
             },
           }))
+
+          if (showNotification && onAchievementUnlock) {
+            onAchievementUnlock(updatedAchievement)
+          }
         }
       },
 
@@ -140,7 +143,8 @@ export const useProgressStore = create<ProgressStore>()(
       },
 
       checkAchievements: () => {
-        const { levels, unlockAchievement, updateAchievementProgress } = get()
+        const state = get()
+        const { levels, unlockAchievement, updateAchievementProgress } = state
 
         // 检查各种成就条件
         const completedLevels = Object.values(levels).filter((level) => level.completed)
