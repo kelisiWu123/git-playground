@@ -1,4 +1,5 @@
 export interface LevelProgress {
+  levelId: number
   completed: boolean
   completedAt?: string
   timeSpent: number

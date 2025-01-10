@@ -1,8 +1,8 @@
-import type { UserProgress } from '../types/progress'
+import type { Progress } from '../types/progress'
 
 const STORAGE_KEY = 'git-meow-progress'
 
-export function saveProgress(progress: UserProgress): void {
+export function saveProgress(progress: Progress): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
   } catch (error) {
@@ -10,7 +10,7 @@ export function saveProgress(progress: UserProgress): void {
   }
 }
 
-export function loadProgress(): UserProgress | null {
+export function loadProgress(): Progress | null {
   try {
     const data = localStorage.getItem(STORAGE_KEY)
     return data ? JSON.parse(data) : null

@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { useProgressStore } from '../store/progressStore'
 import { LEVELS } from '../constants/levels'
@@ -16,12 +15,12 @@ export default function ProgressStats() {
     .filter((level) => level.completedAt)
     .sort((a, b) => new Date(a.completedAt!).getTime() - new Date(b.completedAt!).getTime())[0]
 
-  const studyDuration = firstCompletedLevel ? Math.ceil((new Date(lastPlayedAt || '').getTime() - new Date(firstCompletedLevel.completedAt!).getTime()) / (1000 * 60 * 60 * 24)) : 0
+  const studyDuration = firstCompletedLevel && lastPlayedAt ? Math.ceil((new Date(lastPlayedAt).getTime() - new Date(firstCompletedLevel.completedAt!).getTime()) / (1000 * 60 * 60 * 24)) : 0
 
   // 计算最近完成的关卡
-  const lastCompletedLevel = Object.values(levels)
-    .filter((level) => level.completed)
-    .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0]
+  const lastCompletedLevel = Object.entries(levels)
+    .filter(([, level]) => level.completed)
+    .sort(([, a], [, b]) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0]
 
   // 计算新的统计数据
   const totalTimeSpent = Object.values(levels).reduce((sum, level) => sum + (level.timeSpent || 0), 0)
@@ -70,7 +69,7 @@ export default function ProgressStats() {
           <div className="text-sm text-gray-600">学习天数</div>
         </div>
         <div className="rounded-lg bg-pink-50 p-4">
-          <div className="text-2xl font-bold text-pink-600">{lastCompletedLevel ? LEVELS.find((l) => l.id === lastCompletedLevel.levelId)?.title || '-' : '-'}</div>
+          <div className="text-2xl font-bold text-pink-600">{lastCompletedLevel ? LEVELS.find((l) => l.id === Number(lastCompletedLevel[0]))?.title || '-' : '-'}</div>
           <div className="text-sm text-gray-600">最近完成</div>
         </div>
       </div>

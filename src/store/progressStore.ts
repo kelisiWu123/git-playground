@@ -4,6 +4,8 @@ import type { Progress, Achievement } from '../types/progress'
 import { ACHIEVEMENTS, ACHIEVEMENT_IDS } from '../constants/achievements'
 
 export interface ProgressStore extends Progress {
+  currentLevel: number
+  lastPlayedAt: string | null
   initializeProgress: () => void
   completeLevel: (levelId: number) => void
   recordCommand: (levelId: number, command: string) => void
@@ -23,6 +25,8 @@ export const useProgressStore = create<ProgressStore>()(
       achievements: {},
       lastCompletedLevel: 1,
       totalTimeSpent: 0,
+      currentLevel: 1,
+      lastPlayedAt: null,
 
       initializeProgress: () => {
         const { achievements } = get()
