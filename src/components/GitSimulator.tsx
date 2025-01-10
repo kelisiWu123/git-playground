@@ -1,13 +1,29 @@
 import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Command } from '../constants/levels'
 
 interface GitSimulatorProps {
   onCommand: (command: Command) => void
 }
 
+const lineVariants = {
+  initial: { opacity: 0, x: -20 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 20 },
+}
+
 export default function GitSimulator({ onCommand }: GitSimulatorProps) {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<string[]>([])
+  const historyEndRef = React.useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    historyEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  React.useEffect(() => {
+    scrollToBottom()
+  }, [history])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,18 +72,34 @@ export default function GitSimulator({ onCommand }: GitSimulatorProps) {
   }
 
   return (
-    <div className="rounded-lg bg-gray-900 p-4 font-mono text-sm text-white">
-      <div className="mb-4 h-48 overflow-y-auto">
-        {history.map((line, index) => (
-          <div key={index} className="mb-1">
-            {line}
-          </div>
-        ))}
+    <motion.div className="flex h-full flex-col rounded-lg bg-gray-900 text-sm text-white" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <div className="flex-1 overflow-y-auto p-4">
+        <AnimatePresence mode="popLayout">
+          {history.map((line, index) => (
+            <motion.div
+              key={index}
+              className="mb-1"
+              variants={lineVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.2 }}
+              style={{
+                color: line.startsWith('Error:') ? '#ef4444' : line.startsWith('$') ? '#93c5fd' : '#ffffff',
+              }}
+            >
+              {line}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        <div ref={historyEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className="flex items-center">
-        <span className="mr-2">$</span>
-        <input type="text" value={input} onChange={(e) => setInput(e.target.value)} className="flex-1 bg-transparent focus:outline-none" placeholder="输入 git 命令..." spellCheck={false} />
-      </form>
-    </div>
+      <motion.form onSubmit={handleSubmit} className="flex items-center border-t border-gray-700 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        <motion.span className="mr-2" animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity }}>
+          $
+        </motion.span>
+        <input type="text" value={input} onChange={(e) => setInput(e.target.value)} className="flex-1 bg-transparent focus:outline-none" placeholder="输入 git 命令..." spellCheck={false} autoFocus />
+      </motion.form>
+    </motion.div>
   )
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export interface FileNode {
   name: string
@@ -28,15 +29,29 @@ function FileIcon({ type, status }: { type: 'file' | 'directory'; status?: strin
   }
 }
 
+const statusColors = {
+  untracked: 'text-red-500',
+  staged: 'text-green-600',
+  committed: 'text-blue-500',
+}
+
 function FileTreeNode({ node, depth = 0 }: { node: FileNode; depth?: number }) {
   return (
-    <div style={{ paddingLeft: `${depth * 1.5}rem` }}>
-      <div className={`flex items-center py-1 ${node.status === 'staged' ? 'text-green-600' : ''}`}>
-        <FileIcon type={node.type} status={node.status} />
+    <motion.div
+      style={{ paddingLeft: `${depth * 1.5}rem` }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.2, delay: depth * 0.1 }}
+    >
+      <motion.div className={`flex items-center py-1 ${node.status ? statusColors[node.status] : ''}`} whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+        <motion.span initial={false} animate={node.status ? { rotate: [0, 15, -15, 0] } : {}} transition={{ duration: 0.5 }}>
+          <FileIcon type={node.type} status={node.status} />
+        </motion.span>
         <span>{node.name}</span>
-      </div>
-      {node.children?.map((child, index) => <FileTreeNode key={index} node={child} depth={depth + 1} />)}
-    </div>
+      </motion.div>
+      <AnimatePresence>{node.children?.map((child, index) => <FileTreeNode key={child.name + index} node={child} depth={depth + 1} />)}</AnimatePresence>
+    </motion.div>
   )
 }
 
@@ -44,9 +59,11 @@ export default function FileTree({ files }: FileTreeProps) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 font-mono text-sm">
       <div className="mb-2 text-gray-500">项目文件结构：</div>
-      {files.map((file, index) => (
-        <FileTreeNode key={index} node={file} />
-      ))}
+      <AnimatePresence>
+        {files.map((file, index) => (
+          <FileTreeNode key={file.name + index} node={file} />
+        ))}
+      </AnimatePresence>
     </div>
   )
 }

@@ -37,19 +37,8 @@ export default function Level() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-50 p-8">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-pink-600">
-            Level {currentLevel.id}: {currentLevel.title}
-          </h1>
-          <Link to={ROUTES.LEVELS} className="rounded-lg bg-pink-100 px-4 py-2 text-pink-600 hover:bg-pink-200">
-            返回关卡列表
-          </Link>
-        </div>
-
-        <LevelContent level={currentLevel} onComplete={handleLevelComplete} />
-      </div>
+    <div className="min-h-screen bg-pink-50">
+      <LevelContent level={currentLevel} onComplete={handleLevelComplete} onBack={() => navigate(ROUTES.LEVELS)} />
     </div>
   )
 }
