@@ -9,7 +9,14 @@ export interface LevelProgress {
   levelId: number
   completed: boolean
   completedAt?: string
-  commands: string[]
+  timeSpent: number
+  commandCount: number
+  commandHistory: {
+    command: string
+    timestamp: string
+  }[]
+  attempts: number
+  hints: number
 }
 
 export interface UserProgress {
@@ -17,4 +24,10 @@ export interface UserProgress {
   levels: Record<number, LevelProgress>
   achievements: Record<string, Achievement>
   lastPlayedAt?: string
+}
+
+export interface Progress {
+  currentLevel: number
+  levels: Record<number, LevelProgress>
+  lastPlayedAt: string
 }

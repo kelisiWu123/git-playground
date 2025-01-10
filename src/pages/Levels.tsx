@@ -4,6 +4,7 @@ import { LEVELS } from '../constants/levels'
 import { useProgressStore } from '../store/progressStore'
 import { useEffect } from 'react'
 import ProgressStats from '../components/ProgressStats'
+import { motion } from 'framer-motion'
 
 export default function Levels() {
   const { currentLevel, levels, initializeProgress } = useProgressStore()
@@ -27,19 +28,75 @@ export default function Levels() {
             const isLocked = level.id > currentLevel
             const isCompleted = levels[level.id]?.completed
 
+            if (isCompleted) {
+              return (
+                <motion.div key={level.id} className="flex flex-col rounded-lg bg-green-50 p-4 shadow-md" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-lg font-semibold text-green-600">Level {level.id}</span>
+                    <span className="text-2xl">✨</span>
+                  </div>
+                  <h3 className="mb-3 text-base font-medium text-green-600">{level.title}</h3>
+                  <div className="flex-1">
+                    <h4 className="mb-2 text-sm font-medium text-green-600">知识要点</h4>
+                    <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
+                      {level.id === 1 && (
+                        <>
+                          <li>使用 git init 初始化仓库</li>
+                          <li>理解 Git 仓库的概念</li>
+                          <li>.git 目录的作用</li>
+                        </>
+                      )}
+                      {level.id === 2 && (
+                        <>
+                          <li>使用 git add 添加文件</li>
+                          <li>理解工作区和暂存区</li>
+                          <li>文件的未追踪状态</li>
+                        </>
+                      )}
+                      {level.id === 3 && (
+                        <>
+                          <li>使用 git commit 提交更改</li>
+                          <li>编写合适的提交信息</li>
+                          <li>理解版本历史记录</li>
+                        </>
+                      )}
+                      {level.id === 4 && (
+                        <>
+                          <li>使用 git branch 创建分支</li>
+                          <li>理解分支的概念</li>
+                          <li>分支命名的规范</li>
+                        </>
+                      )}
+                      {level.id === 5 && (
+                        <>
+                          <li>使用 git merge 合并分支</li>
+                          <li>处理合并冲突</li>
+                          <li>理解分支合并策略</li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
+                  <div className="mt-3 text-center">
+                    <Link to={ROUTES.LEVEL.replace(':levelId', String(level.id))} className="text-sm text-green-600 hover:text-green-700">
+                      重新练习 →
+                    </Link>
+                  </div>
+                </motion.div>
+              )
+            }
+
             return (
               <Link
                 key={level.id}
                 to={isLocked ? '#' : ROUTES.LEVEL.replace(':levelId', String(level.id))}
                 className={`flex aspect-square flex-col items-center justify-center rounded-lg p-4 shadow-md transition-transform ${
-                  isLocked ? 'cursor-not-allowed bg-gray-100' : isCompleted ? 'bg-green-50 hover:scale-105' : 'bg-white hover:scale-105'
+                  isLocked ? 'cursor-not-allowed bg-gray-100' : 'bg-white hover:scale-105'
                 }`}
               >
-                <div className={`mb-2 text-2xl font-bold ${isLocked ? 'text-gray-400' : isCompleted ? 'text-green-500' : 'text-pink-500'}`}>Level {level.id}</div>
+                <div className={`mb-2 text-2xl font-bold ${isLocked ? 'text-gray-400' : 'text-pink-500'}`}>Level {level.id}</div>
                 <div className={`text-center text-sm ${isLocked ? 'text-gray-400' : 'text-gray-500'}`}>{level.title}</div>
                 {isLocked && <div className="mt-2 text-3xl">🔒</div>}
-                {isCompleted && <div className="mt-2 text-3xl">✨</div>}
-                {!isLocked && !isCompleted && <div className="mt-2 text-sm text-pink-600">点击开始</div>}
+                {!isLocked && <div className="mt-2 text-sm text-pink-600">点击开始</div>}
               </Link>
             )
           })}
