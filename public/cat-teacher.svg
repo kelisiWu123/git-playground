@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 头部 -->
+  <circle cx="128" cy="128" r="120" fill="#FFB6C1"/>
+  
+  <!-- 耳朵 -->
+  <path d="M48 88L88 48C88 48 98 78 78 98C58 118 48 88 48 88Z" fill="#FF69B4"/>
+  <path d="M208 88L168 48C168 48 158 78 178 98C198 118 208 88 208 88Z" fill="#FF69B4"/>
+  
+  <!-- 脸部 -->
+  <circle cx="128" cy="138" r="90" fill="white"/>
+  
+  <!-- 眼睛 -->
+  <circle cx="98" cy="128" r="15" fill="#000"/>
+  <circle cx="158" cy="128" r="15" fill="#000"/>
+  <circle cx="95" cy="125" r="5" fill="white"/>
+  <circle cx="155" cy="125" r="5" fill="white"/>
+  
+  <!-- 鼻子 -->
+  <path d="M123 148L128 153L133 148L128 158Z" fill="#FFB6C1"/>
+  
+  <!-- 嘴巴 -->
+  <path d="M108 168C108 168 128 178 148 168" stroke="#FF69B4" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- 眼镜 -->
+  <circle cx="98" cy="128" r="25" stroke="#FF69B4" stroke-width="3" fill="none"/>
+  <circle cx="158" cy="128" r="25" stroke="#FF69B4" stroke-width="3" fill="none"/>
+  <path d="M123 128H133" stroke="#FF69B4" stroke-width="3"/>
+  
+  <!-- 教师帽 -->
+  <path d="M68 78L188 78L158 38L98 38L68 78Z" fill="#FF69B4"/>
+  <rect x="118" y="28" width="20" height="10" fill="#FF69B4"/>
+  
+  <!-- 流苏 -->
+  <path d="M138 28L148 18" stroke="#FFB6C1" stroke-width="2"/>
+</svg> 
