@@ -27,7 +27,7 @@ export default function Start() {
 
         <div className="mt-12 text-sm text-gray-500">
           <p>Version 1.0.0</p>
-          <p>Made with ❤️ by Cursor</p>
+          <p>Made with ❤️ by KelisiWu</p>
         </div>
       </motion.div>
     </div>

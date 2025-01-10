@@ -27,3 +27,39 @@ export function clearProgress(): void {
     console.error('Failed to clear progress:', error)
   }
 }
+
+export interface GameSettings {
+  language: string
+}
+
+const SETTINGS_KEY = 'git-meow-settings'
+
+export const DEFAULT_SETTINGS: GameSettings = {
+  language: 'zh',
+}
+
+export function saveSettings(settings: GameSettings): void {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  } catch (error) {
+    console.error('Failed to save settings:', error)
+  }
+}
+
+export function loadSettings(): GameSettings {
+  try {
+    const data = localStorage.getItem(SETTINGS_KEY)
+    return data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : DEFAULT_SETTINGS
+  } catch (error) {
+    console.error('Failed to load settings:', error)
+    return DEFAULT_SETTINGS
+  }
+}
+
+export function clearSettings(): void {
+  try {
+    localStorage.removeItem(SETTINGS_KEY)
+  } catch (error) {
+    console.error('Failed to clear settings:', error)
+  }
+}
