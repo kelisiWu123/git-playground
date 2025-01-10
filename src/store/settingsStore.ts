@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { GameSettings } from '../utils/storage'
 import { DEFAULT_SETTINGS, loadSettings } from '../utils/storage'
 
 interface SettingsStore {

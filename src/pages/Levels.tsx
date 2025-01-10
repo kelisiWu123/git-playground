@@ -14,31 +14,37 @@ export default function Levels() {
   }, [initializeProgress])
 
   return (
-    <div className="min-h-screen bg-pink-50 p-8">
-      <h1 className="mb-8 text-center text-3xl font-bold text-pink-600">Git 喵喵乐园</h1>
-
+    <div className="min-h-screen bg-pink-50 p-4 pb-safe sm:p-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
+        <h1 className="mb-4 text-center text-2xl font-bold text-pink-600 sm:mb-8 sm:text-3xl">Git 喵喵乐园</h1>
+
+        <div className="mb-6 sm:mb-8">
           <ProgressStats />
         </div>
 
-        <h2 className="mb-6 text-2xl font-bold text-pink-600">选择关卡</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <h2 className="mb-4 text-xl font-bold text-pink-600 sm:mb-6 sm:text-2xl">选择关卡</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
           {LEVELS.map((level) => {
             const isLocked = level.id > currentLevel
             const isCompleted = levels[level.id]?.completed
 
             if (isCompleted) {
               return (
-                <motion.div key={level.id} className="flex flex-col rounded-lg bg-green-50 p-4 shadow-md" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                <motion.div
+                  key={level.id}
+                  className="flex flex-col rounded-lg bg-green-50 p-3 shadow-md sm:p-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-lg font-semibold text-green-600">Level {level.id}</span>
-                    <span className="text-2xl">✨</span>
+                    <span className="text-base font-semibold text-green-600 sm:text-lg">Level {level.id}</span>
+                    <span className="text-xl sm:text-2xl">✨</span>
                   </div>
-                  <h3 className="mb-3 text-base font-medium text-green-600">{level.title}</h3>
+                  <h3 className="mb-2 text-sm font-medium text-green-600 sm:mb-3 sm:text-base">{level.title}</h3>
                   <div className="flex-1">
-                    <h4 className="mb-2 text-sm font-medium text-green-600">知识要点</h4>
-                    <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
+                    <h4 className="mb-1 text-xs font-medium text-green-600 sm:mb-2 sm:text-sm">知识要点</h4>
+                    <ul className="list-inside list-disc space-y-0.5 text-xs text-gray-600 sm:space-y-1 sm:text-sm">
                       {level.id === 1 && (
                         <>
                           <li>使用 git init 初始化仓库</li>
@@ -76,8 +82,11 @@ export default function Levels() {
                       )}
                     </ul>
                   </div>
-                  <div className="mt-3 text-center">
-                    <Link to={ROUTES.LEVEL.replace(':levelId', String(level.id))} className="text-sm text-green-600 hover:text-green-700">
+                  <div className="mt-2 text-center sm:mt-3">
+                    <Link
+                      to={ROUTES.LEVEL.replace(':levelId', String(level.id))}
+                      className="inline-block rounded-md px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-100 active:bg-green-200 sm:text-sm"
+                    >
                       重新练习 →
                     </Link>
                   </div>
@@ -89,23 +98,25 @@ export default function Levels() {
               <Link
                 key={level.id}
                 to={isLocked ? '#' : ROUTES.LEVEL.replace(':levelId', String(level.id))}
-                className={`flex aspect-square flex-col items-center justify-center rounded-lg p-4 shadow-md transition-transform ${
-                  isLocked ? 'cursor-not-allowed bg-gray-100' : 'bg-white hover:scale-105'
+                className={`flex aspect-square flex-col items-center justify-center rounded-lg p-3 shadow-md transition-transform sm:p-4 ${
+                  isLocked ? 'cursor-not-allowed bg-gray-100' : 'bg-white hover:scale-105 active:scale-100'
                 }`}
               >
-                <div className={`mb-2 text-2xl font-bold ${isLocked ? 'text-gray-400' : 'text-pink-500'}`}>Level {level.id}</div>
-                <div className={`text-center text-sm ${isLocked ? 'text-gray-400' : 'text-gray-500'}`}>{level.title}</div>
-                {isLocked && <div className="mt-2 text-3xl">🔒</div>}
-                {!isLocked && <div className="mt-2 text-sm text-pink-600">点击开始</div>}
+                <div className={`mb-1 text-xl font-bold sm:mb-2 sm:text-2xl ${isLocked ? 'text-gray-400' : 'text-pink-500'}`}>Level {level.id}</div>
+                <div className={`text-center text-xs sm:text-sm ${isLocked ? 'text-gray-400' : 'text-gray-500'}`}>{level.title}</div>
+                {isLocked && <div className="mt-2 text-2xl sm:text-3xl">🔒</div>}
+                {!isLocked && <div className="mt-2 text-xs text-pink-600 sm:text-sm">点击开始</div>}
               </Link>
             )
           })}
         </div>
       </div>
 
-      <Link to={ROUTES.HOME} className="mt-8 block text-center text-pink-600 hover:text-pink-700">
-        返回首页
-      </Link>
+      <div className="mt-6 text-center sm:mt-8">
+        <Link to={ROUTES.HOME} className="inline-block rounded-lg px-4 py-2 text-sm font-medium text-pink-600 hover:bg-pink-100 active:bg-pink-200 sm:text-base">
+          返回首页
+        </Link>
+      </div>
     </div>
   )
 }

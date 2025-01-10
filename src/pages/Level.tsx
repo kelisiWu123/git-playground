@@ -25,11 +25,13 @@ export default function Level() {
     }
   }, [currentLevel, currentLevelData, levelNumber, navigate])
 
+  // 如果关卡不存在,显示错误页面
   if (!currentLevelData) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-pink-50">
-        <h1 className="mb-4 text-2xl font-bold text-pink-600">关卡不存在</h1>
-        <Link to={ROUTES.LEVELS} className="rounded-lg bg-pink-500 px-6 py-2 text-white hover:bg-pink-600">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-pink-50 px-4 py-8 text-center">
+        <h1 className="mb-4 text-xl font-bold text-pink-600 sm:text-2xl">关卡不存在</h1>
+        <p className="mb-6 text-sm text-gray-600 sm:text-base">抱歉,您访问的关卡不存在。请返回关卡列表选择其他关卡。</p>
+        <Link to={ROUTES.LEVELS} className="rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-600 active:bg-pink-700 sm:px-6 sm:text-base">
           返回关卡列表
         </Link>
       </div>
