@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 export interface FileNode {
   name: string
   type: 'file' | 'directory'
-  status?: 'untracked' | 'staged' | 'committed'
   children?: FileNode[]
+  status?: 'untracked' | 'staged' | 'committed' | 'conflict' | 'modified'
+  content?: string
 }
 
 interface FileTreeProps {
@@ -31,8 +32,10 @@ function FileIcon({ type, status }: { type: 'file' | 'directory'; status?: strin
 
 const statusColors = {
   untracked: 'text-red-500',
-  staged: 'text-green-600',
+  staged: 'text-green-500',
   committed: 'text-blue-500',
+  conflict: 'text-yellow-500',
+  modified: 'text-orange-500',
 }
 
 function FileTreeNode({ node, depth = 0 }: { node: FileNode; depth?: number }) {
