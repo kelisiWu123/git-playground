@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createHashRouter } from 'react-router-dom'
 import { ROUTES } from './constants/routes'
 import Home from './pages/Home'
 import Level from './pages/Level'
@@ -7,7 +7,7 @@ import Achievements from './pages/Achievements'
 import Settings from './pages/Settings'
 import Start from './pages/Start'
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: ROUTES.HOME,
     element: <Home />,
