@@ -145,10 +145,6 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
     const newCommands = [...commands, command]
     if (level.validation(newCommands)) {
       setShowSuccess(true)
-      setTimeout(() => {
-        setShowSuccess(false)
-        handleComplete()
-      }, 1500)
     } else {
       // 如果命令正确但还未完成关卡，也增加尝试次数
       incrementAttempts(level.id)
@@ -299,7 +295,15 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
             <div className="rounded-lg bg-white p-6 text-center shadow-xl">
               <div className="mb-4 text-4xl">🎉</div>
               <h3 className="mb-2 text-xl font-bold text-pink-600">恭喜通关！</h3>
-              <p className="text-gray-600">即将进入下一关...</p>
+              <p className="mb-4 text-sm text-gray-600">你已经掌握了这一关的知识点</p>
+              <div className="flex flex-col gap-2">
+                <button onClick={handleComplete} className="rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-600 active:bg-pink-700">
+                  进入下一关
+                </button>
+                <button onClick={onBack} className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 active:bg-gray-300">
+                  返回关卡列表
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
