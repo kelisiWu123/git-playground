@@ -5,27 +5,6 @@ import GitSimulator from './GitSimulator'
 import FileTree from './FileTree'
 import { useProgressStore } from '../store/progressStore'
 
-// 新增TutorialTip组件
-const TutorialTip = ({ content, onClose }: { content: string; onClose: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    className="fixed inset-x-4 top-4 z-50 mx-auto max-w-md rounded-lg bg-white p-4 shadow-lg sm:right-4 sm:left-auto sm:inset-x-auto sm:w-72"
-  >
-    <div className="mb-2 flex items-center justify-between">
-      <span className="text-sm font-medium text-pink-600">提示</span>
-      <button onClick={onClose} className="h-8 w-8 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 active:bg-gray-200" aria-label="关闭提示">
-        <svg className="mx-auto h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-    <p className="text-sm text-gray-600">{content}</p>
-    <div className="mt-3 text-xs text-gray-400">点击任意位置关闭提示</div>
-  </motion.div>
-)
-
 // 新增任务提示组件
 const TaskTip = ({ level, onClose }: { level: Level; onClose: () => void }) => (
   <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -47,6 +26,12 @@ const TaskTip = ({ level, onClose }: { level: Level; onClose: () => void }) => (
           <h4 className="mb-2 text-sm font-medium text-blue-600">任务目标</h4>
           <div className="text-sm text-gray-600">{level.description}</div>
         </div>
+        {level.hint && (
+          <div className="rounded-lg bg-pink-50 p-4">
+            <h4 className="mb-2 text-sm font-medium text-pink-600">提示</h4>
+            <div className="text-sm text-gray-600">{level.hint}</div>
+          </div>
+        )}
       </div>
       <button onClick={onClose} className="mt-6 w-full rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-600 active:bg-pink-700">
         开始任务
@@ -91,8 +76,7 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
   const [showSuccess, setShowSuccess] = React.useState(false)
   const [showHint, setShowHint] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState<'terminal' | 'content' | 'tree'>('content')
-  const [showTutorialTip, setShowTutorialTip] = React.useState(level.id === 1)
-  const [showTaskTip, setShowTaskTip] = React.useState(true) // 默认显示任务提示
+  const [showTaskTip, setShowTaskTip] = React.useState(true)
   const [actionFeedback, setActionFeedback] = React.useState<{ message: string; type: 'success' | 'info' } | null>(null)
   const [isCompleting, setIsCompleting] = React.useState(false)
   const { recordCommand, incrementAttempts, incrementHints, updateTimeSpent } = useProgressStore()
@@ -107,8 +91,7 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
     setCurrentState(level.initialState)
     setShowSuccess(false)
     setShowHint(false)
-    setShowTutorialTip(level.id === 1)
-    setShowTaskTip(true) // 新关卡显示任务提示
+    setShowTaskTip(true)
     setActionFeedback(null)
     setIsCompleting(false)
     startTimeRef.current = Date.now()
@@ -258,36 +241,9 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
     setShowHint(!showHint)
   }
 
-  // 添加点击背景关闭提示的处理
-  const handleTutorialClose = React.useCallback(() => {
-    setShowTutorialTip(false)
-  }, [])
-
-  // 添加触摸事件处理
-  useEffect(() => {
-    if (showTutorialTip) {
-      const handleTouchStart = (e: Event) => {
-        const target = e.target as HTMLElement
-        if (!target.closest('.tutorial-tip')) {
-          handleTutorialClose()
-        }
-      }
-      document.addEventListener('touchstart', handleTouchStart)
-      return () => {
-        document.removeEventListener('touchstart', handleTouchStart)
-      }
-    }
-  }, [showTutorialTip, handleTutorialClose])
-
   return (
     <div className="relative flex min-h-screen flex-col bg-white">
       <AnimatePresence>
-        {showTutorialTip && (
-          <>
-            <div className="fixed inset-0 z-40 bg-black/20" onClick={handleTutorialClose} />
-            <TutorialTip content={level.hint || '在这一关中，你需要完成特定的Git操作。点击"需要帮助"可以查看详细提示。'} onClose={handleTutorialClose} />
-          </>
-        )}
         {showTaskTip && <TaskTip level={level} onClose={() => setShowTaskTip(false)} />}
         {actionFeedback && <ActionFeedback message={actionFeedback.message} type={actionFeedback.type} />}
       </AnimatePresence>
@@ -305,7 +261,9 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
         </div>
 
         <div className="flex items-center space-x-2">
-          {!showHint && level.id === 1 && <div className="animate-pulse text-sm text-pink-600">👈 需要帮助？点击这里查看提示</div>}
+          <button onClick={() => setShowTaskTip(true)} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100">
+            查看任务
+          </button>
           <button
             onClick={() => {
               setShowHint(!showHint)
