@@ -5,6 +5,73 @@ import GitSimulator from './GitSimulator'
 import FileTree from './FileTree'
 import { useProgressStore } from '../store/progressStore'
 
+// 新增TutorialTip组件
+const TutorialTip = ({ content, onClose }: { content: string; onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="fixed inset-x-4 top-4 z-50 mx-auto max-w-md rounded-lg bg-white p-4 shadow-lg sm:right-4 sm:left-auto sm:inset-x-auto sm:w-72"
+  >
+    <div className="mb-2 flex items-center justify-between">
+      <span className="text-sm font-medium text-pink-600">提示</span>
+      <button onClick={onClose} className="h-8 w-8 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 active:bg-gray-200" aria-label="关闭提示">
+        <svg className="mx-auto h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <p className="text-sm text-gray-600">{content}</p>
+    <div className="mt-3 text-xs text-gray-400">点击任意位置关闭提示</div>
+  </motion.div>
+)
+
+// 新增任务提示组件
+const TaskTip = ({ level, onClose }: { level: Level; onClose: () => void }) => (
+  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/20" onClick={onClose} />
+    <div className="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-pink-600">
+          第 {level.id} 关：{level.title}
+        </h3>
+        <button onClick={onClose} className="h-8 w-8 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+          <svg className="mx-auto h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div className="space-y-4">
+        <p className="text-sm leading-relaxed text-gray-600">{level.description}</p>
+        <div className="rounded-lg bg-blue-50 p-4">
+          <h4 className="mb-2 text-sm font-medium text-blue-600">任务目标</h4>
+          <div className="text-sm text-gray-600">{level.description}</div>
+        </div>
+      </div>
+      <button onClick={onClose} className="mt-6 w-full rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-600 active:bg-pink-700">
+        开始任务
+      </button>
+    </div>
+  </motion.div>
+)
+
+// 操作反馈提示组件
+const ActionFeedback = ({ message, type }: { message: string; type: 'success' | 'info' }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className={`fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-lg p-4 shadow-lg sm:bottom-8 ${type === 'success' ? 'bg-green-50' : 'bg-blue-50'}`}
+  >
+    <div className="flex items-center space-x-3">
+      <span className={`text-xl ${type === 'success' ? 'text-green-500' : 'text-blue-500'}`}>{type === 'success' ? '✓' : 'ℹ'}</span>
+      <div className="flex-1">
+        <p className={`text-sm ${type === 'success' ? 'text-green-700' : 'text-blue-700'}`}>{message}</p>
+      </div>
+    </div>
+  </motion.div>
+)
+
 interface LevelContentProps {
   level: Level
   onComplete: () => void
@@ -24,11 +91,28 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
   const [showSuccess, setShowSuccess] = React.useState(false)
   const [showHint, setShowHint] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState<'terminal' | 'content' | 'tree'>('content')
+  const [showTutorialTip, setShowTutorialTip] = React.useState(level.id === 1)
+  const [showTaskTip, setShowTaskTip] = React.useState(true) // 默认显示任务提示
+  const [actionFeedback, setActionFeedback] = React.useState<{ message: string; type: 'success' | 'info' } | null>(null)
+  const [isCompleting, setIsCompleting] = React.useState(false)
   const { recordCommand, incrementAttempts, incrementHints, updateTimeSpent } = useProgressStore()
 
   // 使用 ref 来存储开始时间,避免重渲染
   const startTimeRef = React.useRef(Date.now())
   const timerRef = React.useRef<number>()
+
+  // 当关卡改变时重置状态
+  useEffect(() => {
+    setCommands([])
+    setCurrentState(level.initialState)
+    setShowSuccess(false)
+    setShowHint(false)
+    setShowTutorialTip(level.id === 1)
+    setShowTaskTip(true) // 新关卡显示任务提示
+    setActionFeedback(null)
+    setIsCompleting(false)
+    startTimeRef.current = Date.now()
+  }, [level])
 
   // 组件挂载时开始计时
   useEffect(() => {
@@ -56,6 +140,9 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
 
   // 关卡完成时更新最终用时
   const handleComplete = () => {
+    if (isCompleting) return // 防止重复点击
+    setIsCompleting(true)
+
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
@@ -67,6 +154,14 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
     }
     onComplete()
   }
+
+  // 显示操作反馈，并在3秒后自动消失
+  const showActionFeedback = React.useCallback((message: string, type: 'success' | 'info' = 'success') => {
+    setActionFeedback({ message, type })
+    setTimeout(() => {
+      setActionFeedback(null)
+    }, 3000)
+  }, [])
 
   const handleCommand = (command: Command) => {
     setCommands((prev) => [...prev, command])
@@ -83,9 +178,10 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
       return
     }
 
-    // 更新当前状态
+    // 根据不同命令显示相应的反馈
     switch (command.type) {
       case 'init':
+        showActionFeedback('成功创建Git仓库！现在这个文件夹已经被Git管理起来了。你可以在文件树中看到新创建的 .git 文件夹。')
         setCurrentState((prev) => ({
           ...prev,
           files: [
@@ -106,6 +202,7 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
         }))
         break
       case 'add':
+        showActionFeedback('文件已添加到暂存区。这意味着Git开始跟踪这个文件的变化了！', 'info')
         setCurrentState((prev) => ({
           ...prev,
           files: prev.files.map((file) => ({
@@ -115,6 +212,7 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
         }))
         break
       case 'commit':
+        showActionFeedback('成功提交！这些改动已经被永久记录在Git历史中了。')
         setCurrentState((prev) => ({
           ...prev,
           files: prev.files.map((file) => ({
@@ -144,9 +242,11 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
     // 检查是否完成关卡
     const newCommands = [...commands, command]
     if (level.validation(newCommands)) {
-      setShowSuccess(true)
+      // 延迟显示成功提示，让用户有时间看到最后一个操作的反馈
+      setTimeout(() => {
+        setShowSuccess(true)
+      }, 1500)
     } else {
-      // 如果命令正确但还未完成关卡，也增加尝试次数
       incrementAttempts(level.id)
     }
   }
@@ -158,19 +258,66 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
     setShowHint(!showHint)
   }
 
+  // 添加点击背景关闭提示的处理
+  const handleTutorialClose = React.useCallback(() => {
+    setShowTutorialTip(false)
+  }, [])
+
+  // 添加触摸事件处理
+  useEffect(() => {
+    if (showTutorialTip) {
+      const handleTouchStart = (e: Event) => {
+        const target = e.target as HTMLElement
+        if (!target.closest('.tutorial-tip')) {
+          handleTutorialClose()
+        }
+      }
+      document.addEventListener('touchstart', handleTouchStart)
+      return () => {
+        document.removeEventListener('touchstart', handleTouchStart)
+      }
+    }
+  }, [showTutorialTip, handleTutorialClose])
+
   return (
-    <div className="min-h-screen bg-pink-50">
-      {/* 顶部标题栏 */}
-      <div className="flex items-center justify-between border-b border-pink-100 bg-white px-4 py-3 sm:px-6 sm:py-4">
-        <div>
-          <h1 className="text-lg font-bold text-pink-600 sm:text-2xl">
-            Level {level.id}: <span className="hidden sm:inline">{level.title}</span>
+    <div className="relative flex min-h-screen flex-col bg-white">
+      <AnimatePresence>
+        {showTutorialTip && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/20" onClick={handleTutorialClose} />
+            <TutorialTip content={level.hint || '在这一关中，你需要完成特定的Git操作。点击"需要帮助"可以查看详细提示。'} onClose={handleTutorialClose} />
+          </>
+        )}
+        {showTaskTip && <TaskTip level={level} onClose={() => setShowTaskTip(false)} />}
+        {actionFeedback && <ActionFeedback message={actionFeedback.message} type={actionFeedback.type} />}
+      </AnimatePresence>
+
+      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
+        <div className="flex items-center space-x-4">
+          <button onClick={onBack} className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <h1 className="text-lg font-medium text-gray-900">
+            第 {level.id} 关：{level.title}
           </h1>
-          <h2 className="mt-0.5 text-sm text-gray-500 sm:hidden">{level.title}</h2>
         </div>
-        <button onClick={onBack} className="rounded-lg bg-pink-100 px-3 py-1.5 text-sm font-medium text-pink-600 transition-colors hover:bg-pink-200 active:bg-pink-300 sm:px-4 sm:py-2">
-          返回
-        </button>
+
+        <div className="flex items-center space-x-2">
+          {!showHint && level.id === 1 && <div className="animate-pulse text-sm text-pink-600">👈 需要帮助？点击这里查看提示</div>}
+          <button
+            onClick={() => {
+              setShowHint(!showHint)
+              if (!showHint) {
+                incrementHints(level.id)
+              }
+            }}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${showHint ? 'bg-pink-100 text-pink-700 hover:bg-pink-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          >
+            需要帮助
+          </button>
+        </div>
       </div>
 
       {/* 移动端标签页切换 */}
@@ -297,10 +444,22 @@ export default function LevelContent({ level, onComplete, onBack }: LevelContent
               <h3 className="mb-2 text-xl font-bold text-pink-600">恭喜通关！</h3>
               <p className="mb-4 text-sm text-gray-600">你已经掌握了这一关的知识点</p>
               <div className="flex flex-col gap-2">
-                <button onClick={handleComplete} className="rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-600 active:bg-pink-700">
-                  进入下一关
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
+                    isCompleting ? 'bg-pink-300 cursor-not-allowed' : 'bg-pink-500 hover:bg-pink-600 active:bg-pink-700'
+                  }`}
+                >
+                  {isCompleting ? '正在前往下一关...' : '进入下一关'}
                 </button>
-                <button onClick={onBack} className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 active:bg-gray-300">
+                <button
+                  onClick={onBack}
+                  disabled={isCompleting}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    isCompleting ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
+                  }`}
+                >
                   返回关卡列表
                 </button>
               </div>
