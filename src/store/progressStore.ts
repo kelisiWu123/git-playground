@@ -52,6 +52,7 @@ export const useProgressStore = create<ProgressStore>()(
             },
           },
           lastCompletedLevel: Math.max(state.lastCompletedLevel, levelId + 1),
+          currentLevel: Math.max(state.currentLevel, levelId + 1),
         }))
 
         get().checkAchievements()
